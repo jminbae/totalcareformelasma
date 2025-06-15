@@ -13,8 +13,8 @@
     <!-- Application Structure Plan: The application is structured as a guided journey, moving from the surface-level understanding of melasma to its deep-seated systemic causes and finally to actionable, integrated solutions. This non-linear, thematic approach (Intro -> Known Causes -> Deeper Truth -> Management) is chosen over the report's linear structure to enhance user engagement and comprehension. It starts with relatable information, builds to the core thesis (oxidative stress, gut-skin axis), and concludes with practical, interactive tools (e.g., therapy comparison cards, risk visualization). This flow is designed to empower the user by transforming dense scientific data into a clear, explorable, and memorable narrative. -->
     <!-- Visualization & Content Choices: 
         1. Gut Microbiota (Table 1) -> Goal: Compare -> Viz: Chart.js Horizontal Bar Chart -> Interaction: Static visual -> Justification: Clearly visualizes the decrease in Actinobacteria and other key changes, making the abstract data immediately understandable.
-        2. Oral Therapies (Table 2) -> Goal: Compare/Inform -> Viz: Interactive HTML/CSS Cards with embedded Chart.js Bar Charts -> Interaction: Click-to-reveal details -> Justification: Breaks down complex treatment data into digestible chunks. Users can actively explore and compare options, which is more engaging than a static table.
-        3. Pathogenesis Model (Report Section 5.1) -> Goal: Organize/Explain -> Viz: Interactive HTML/CSS/Tailwind Flowchart -> Interaction: Click to reveal modal with detailed info -> Justification: Translates the complex multi-step pathogenesis into a clear, visual sequence. The click interaction allows for progressive disclosure of information, preventing cognitive overload.
+        2. Oral Therapies (Table 2) -> Goal: Compare/Inform -> Viz: Interactive HTML/CSS Accordion with embedded Chart.js Bar Charts -> Interaction: Click-to-expand details -> Justification: Breaks down complex treatment data into digestible chunks. The accordion style is more streamlined than a separate details box and allows direct comparison by opening different sections.
+        3. Pathogenesis Model (Report Section 5.1) -> Goal: Organize/Explain -> Viz: Interactive HTML/CSS/Tailwind Flowchart -> Interaction: Click to reveal inline info with auto-scroll -> Justification: Translates the complex multi-step pathogenesis into a clear, visual sequence. The inline reveal with auto-scroll is less disruptive and ensures the new content is visible.
         4. Alcohol Risk (Report Section 4.2) -> Goal: Inform/Impact -> Viz: HTML/Unicode Icon Array -> Interaction: Static visual -> Justification: Creates a powerful, memorable visualization of the 20x risk factor, which is more impactful than just stating the number.
         - CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
     <style>
@@ -63,21 +63,19 @@
             line-height: 1;
             color: var(--color-secondary);
         }
-        .tab-button.active {
-            border-color: var(--color-primary);
-            color: var(--color-primary);
-            font-weight: 700;
-        }
-        .modal-overlay {
-            transition: opacity 0.3s ease-in-out;
-        }
-        .modal-content {
-            transition: transform 0.3s ease-in-out;
-        }
-        .accordion-content {
+        .accordion-content, .info-reveal-content {
             max-height: 0;
             overflow: hidden;
-            transition: max-height 0.5s ease-in-out, padding 0.5s ease-in-out;
+            transition: max-height 0.5s ease-in-out, padding 0.5s ease-in-out, margin 0.5s ease-in-out;
+        }
+        .info-reveal-content.open, .accordion-content.open {
+             padding-top: 1rem;
+             padding-bottom: 1rem;
+             margin-top: 1rem;
+        }
+        [data-factor].active, [data-step].active {
+            box-shadow: 0 0 0 3px var(--color-primary);
+            transform: scale(1.05);
         }
     </style>
 </head>
@@ -135,7 +133,8 @@
                     <p class="font-semibold mt-2">유전</p>
                 </div>
             </div>
-            <p class="mt-6 text-gray-500 italic">아이콘을 클릭하여 각 요인이 기미에 미치는 영향을 자세히 알아보세요.</p>
+             <p class="mt-6 text-gray-500 italic">아이콘을 클릭하여 각 요인이 기미에 미치는 영향을 자세히 알아보세요.</p>
+             <div id="overview-details" class="info-reveal-content max-w-3xl mx-auto text-left bg-white p-6 rounded-lg shadow-md mt-6 border border-gray-200"></div>
         </section>
 
         <!-- Section: Deep Dive -->
@@ -144,33 +143,30 @@
             <p class="text-lg text-gray-600 text-center mb-10">기미는 피부에 나타나는 증상이지만, 그 뿌리는 우리 몸 전체의 불균형에 있습니다. 전신적 산화 스트레스와 장 건강이 어떻게 피부에 영향을 미치는지 알아보세요.</p>
 
             <div class="grid md:grid-cols-2 gap-8 lg:gap-12">
-                <div class="bg-white p-6 rounded-lg shadow-lg">
+                <div class="bg-white p-6 rounded-lg shadow-lg flex flex-col">
                     <h3 class="text-2xl font-bold text-primary mb-4">산화 스트레스: 기미의 핵심 동력</h3>
                     <p class="mb-6 text-gray-700">우리 몸의 산화-항산화 균형이 무너질 때 '산화 스트레스'가 발생합니다. 기미 환자는 건강한 사람에 비해 전신적 산화 스트레스 수준이 높으며, 이는 피부 세포 손상과 만성 염증을 유발하여 색소 침착을 악화시키는 핵심 원인입니다. 특히 멜라닌 생성 과정 자체가 활성산소종(ROS)을 발생시키는 '양날의 검'이어서, 피부는 내부로부터 끊임없는 산화 공격에 시달리게 됩니다. 기미는 이러한 산화적 손상에 대해 우리 몸의 항산화 방어 시스템(Nrf2 경로 등)이 한계에 부딪혔다는 임상적 증거입니다.</p>
-                     <div class="bg-amber-50 p-6 rounded-lg">
+                     <div class="bg-amber-50 p-6 rounded-lg mt-auto">
                         <h4 class="font-bold text-lg text-amber-800 mb-3">통합적 병인 모델</h4>
                         <p class="text-sm text-amber-700 mb-4">아래 단계를 클릭하여 기미 발생의 복합적인 과정을 확인해 보세요.</p>
                         <div id="pathogenesis-model" class="flex flex-col items-stretch text-center space-y-2">
                              <div data-step="1" class="p-3 bg-white rounded-lg shadow cursor-pointer transition-all hover:shadow-md hover:bg-gray-50">
-                                <p class="font-semibold">감수성 & 유발</p>
-                                <p class="text-sm text-gray-500">(유전, 호르몬, 자외선)</p>
+                                <p class="font-semibold">감수성 & 유발</p><p class="text-sm text-gray-500">(유전, 호르몬, 자외선)</p>
                             </div>
                             <div class="flowchart-arrow self-center">↓</div>
                             <div data-step="2" class="p-3 bg-white rounded-lg shadow cursor-pointer transition-all hover:shadow-md hover:bg-gray-50">
-                                <p class="font-semibold">국소적 반응</p>
-                                <p class="text-sm text-gray-500">(ROS 증가, 염증)</p>
+                                <p class="font-semibold">국소적 반응</p><p class="text-sm text-gray-500">(ROS 증가, 염증)</p>
                             </div>
                              <div class="flowchart-arrow self-center">↓</div>
                             <div data-step="3" class="p-3 bg-white rounded-lg shadow cursor-pointer transition-all hover:shadow-md hover:bg-gray-50">
-                                <p class="font-semibold">전신적 악화</p>
-                                <p class="text-sm text-gray-500">(장내 불균형, 에스트로겐)</p>
+                                <p class="font-semibold">전신적 악화</p><p class="text-sm text-gray-500">(장내 불균형, 에스트로겐)</p>
                             </div>
                              <div class="flowchart-arrow self-center">↓</div>
                             <div data-step="4" class="p-3 bg-red-100 rounded-lg shadow-lg cursor-pointer transition-all hover:shadow-md hover:bg-red-50">
-                                <p class="font-bold text-red-700">기미 발생</p>
-                                <p class="text-sm text-red-500">(악순환 고착)</p>
+                                <p class="font-bold text-red-700">기미 발생</p><p class="text-sm text-red-500">(악순환 고착)</p>
                             </div>
                         </div>
+                        <div id="pathogenesis-details" class="info-reveal-content text-left bg-white/70 p-4 rounded-md shadow-inner mt-4"></div>
                     </div>
                 </div>
 
@@ -193,9 +189,8 @@
             <div class="grid md:grid-cols-2 gap-8 items-start">
                 <div class="bg-white p-6 rounded-lg shadow-lg">
                     <h3 class="text-2xl font-bold text-primary mb-4">1. 경구 보조 요법</h3>
-                    <p class="mb-6 text-gray-700">다양한 경구용 성분들이 산화 스트레스와 염증을 조절하여 기미 개선에 도움을 줍니다. 아래 카드를 클릭하여 각 성분의 효능과 안전성 정보를 확인하세요.</p>
-                    <div id="therapy-cards" class="space-y-3"></div>
-                    <div id="therapy-details" class="mt-6 p-4 bg-gray-50 rounded-lg border border-gray-200 hidden"></div>
+                    <p class="mb-6 text-gray-700">다양한 경구용 성분들이 산화 스트레스와 염증을 조절하여 기미 개선에 도움을 줍니다. 아래 항목을 클릭하여 각 성분의 효능과 안전성 정보를 확인하세요.</p>
+                    <div id="therapy-accordion" class="space-y-3"></div>
                 </div>
 
                 <div class="bg-white p-6 rounded-lg shadow-lg">
@@ -232,21 +227,10 @@
         <section id="future" class="scroll-mt-20">
             <h2 class="text-3xl md:text-4xl font-bold text-primary text-center mb-4">기미 치료의 미래: 개인 맞춤 의학</h2>
             <p class="max-w-3xl mx-auto text-lg text-gray-600 text-center mb-10">미래의 기미 치료는 단편적인 접근에서 벗어나, 개인의 특성을 종합적으로 분석하여 최적의 솔루션을 제공하는 방향으로 발전할 것입니다. 아래 항목을 클릭해 구체적인 연구 방향을 살펴보세요.</p>
-            <div id="future-accordion" class="max-w-3xl mx-auto space-y-3">
-                 <!-- Accordion items injected by JS -->
-            </div>
+            <div id="future-accordion" class="max-w-3xl mx-auto space-y-3"></div>
         </section>
     </main>
     
-    <!-- Modal -->
-    <div id="info-modal" class="modal-overlay fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4 opacity-0 pointer-events-none">
-        <div class="modal-content bg-white rounded-lg shadow-2xl p-6 md:p-8 w-full max-w-2xl transform scale-95">
-            <h3 id="modal-title" class="text-2xl font-bold text-primary mb-4"></h3>
-            <p id="modal-text" class="text-gray-700 leading-relaxed"></p>
-            <button id="modal-close" class="absolute top-4 right-4 text-gray-500 hover:text-gray-800 text-3xl">&times;</button>
-        </div>
-    </div>
-
     <footer class="mt-16 md:mt-24 bg-gray-100 py-6">
         <div class="container mx-auto px-6 text-center text-gray-500">
             <p>본 콘텐츠는 제공된 학술 보고서의 내용을 기반으로 제작된 정보 제공용 인터랙티브 애플리케이션입니다.</p>
@@ -256,31 +240,40 @@
 
     <script>
     document.addEventListener('DOMContentLoaded', () => {
-        const modal = document.getElementById('info-modal');
-        const modalOverlay = modal.querySelector('.modal-overlay');
-        const modalTitle = document.getElementById('modal-title');
-        const modalText = document.getElementById('modal-text');
-        const modalClose = document.getElementById('modal-close');
 
-        function openModal(title, text) {
-            modalTitle.textContent = title;
-            modalText.innerHTML = text;
-            modal.classList.remove('opacity-0', 'pointer-events-none');
-            modal.querySelector('.modal-content').classList.remove('scale-95');
+        // --- Interactive Reveal Logic ---
+        function setupInfoReveal(triggerContainerId, detailsContainerId, infoSource, activeClass) {
+            const triggerContainer = document.getElementById(triggerContainerId);
+            const detailsContainer = document.getElementById(detailsContainerId);
+            if (!triggerContainer || !detailsContainer) return;
+
+            triggerContainer.addEventListener('click', (e) => {
+                const trigger = e.target.closest('[data-factor], [data-step]');
+                if (!trigger) return;
+
+                const key = trigger.dataset.factor || trigger.dataset.step;
+                const info = infoSource[key];
+                const allTriggers = triggerContainer.querySelectorAll('[data-factor], [data-step]');
+
+                if (trigger.classList.contains(activeClass)) {
+                    detailsContainer.style.maxHeight = null;
+                    detailsContainer.classList.remove('open');
+                    trigger.classList.remove(activeClass);
+                } else {
+                    allTriggers.forEach(t => t.classList.remove(activeClass));
+                    trigger.classList.add(activeClass);
+
+                    detailsContainer.innerHTML = `<h4 class="font-bold text-lg text-primary mb-2">${info.title}</h4><p class="text-gray-700 leading-relaxed">${info.text}</p>`;
+                    detailsContainer.classList.add('open');
+                    detailsContainer.style.maxHeight = detailsContainer.scrollHeight + "px";
+
+                    setTimeout(() => {
+                        detailsContainer.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                    }, 500);
+                }
+            });
         }
 
-        function closeModal() {
-            modal.classList.add('opacity-0');
-            modal.querySelector('.modal-content').classList.add('scale-95');
-            setTimeout(() => modal.classList.add('pointer-events-none'), 300);
-        }
-
-        modalClose.addEventListener('click', closeModal);
-        modal.addEventListener('click', (e) => {
-            if (e.target === modal) closeModal();
-        });
-
-        // Overview Factors Interaction
         const factorInfos = {
             uv: { title: '자외선 (UV)', text: '기미를 유발하고 악화시키는 <strong>가장 중요한 단일 환경 요인</strong>입니다. 자외선은 멜라닌 세포를 직접 자극할 뿐만 아니라, 피부 내 산화 스트레스를 폭발적으로 증가시키고 염증 반응을 일으켜 색소 침착을 심화시키는 악순환의 시작점 역할을 합니다.' },
             hormone: { title: '호르몬 변화', text: '임신, 경구 피임약 복용 등으로 인한 <strong>에스트로겐 수치 변화</strong>는 기미의 잘 알려진 유발 요인입니다. 기미 병변의 피부는 에스트로겐 수용체 발현이 증가해 있어 호르몬 자극에 더욱 민감하게 반응합니다. 이는 장내 미생물에 의한 에스트로겐 대사 조절과도 깊은 관련이 있습니다.' },
@@ -288,63 +281,81 @@
             gut: { title: '장-피부 축', text: '<strong>장내 미생물 불균형</strong>은 전신 염증과 산화 스트레스를 유발하고, 특히 여성호르몬인 에스트로겐의 혈중 농도를 높여 기미를 직접적으로 악화시킬 수 있습니다. 장 건강은 피부 상태를 결정하는 보이지 않는 중요한 열쇠입니다.' },
             gene: { title: '유전적 소인', text: '가족력은 기미 발생의 중요한 위험 요인입니다. 이는 특정 유전자가 <strong>산화 스트레스에 대한 방어 능력</strong>이나 호르몬에 대한 민감도를 결정하여 기미 발생 가능성에 영향을 미칠 수 있음을 시사합니다.' }
         };
-
-        document.getElementById('overview-factors').addEventListener('click', (e) => {
-            const factorElement = e.target.closest('[data-factor]');
-            if (factorElement) {
-                const factorKey = factorElement.dataset.factor;
-                const info = factorInfos[factorKey];
-                openModal(info.title, info.text);
-            }
-        });
+        setupInfoReveal('overview-factors', 'overview-details', factorInfos, 'active');
         
-        // Pathogenesis Model Interaction
         const stepInfos = {
             '1': { title: '1단계: 감수성 및 유발', text: '유전적으로 Nrf2 항산화 방어 시스템이 약하거나 호르몬 수용체 발현이 높은 등 <strong>감수성이 있는 개인</strong>이 자외선이나 호르몬 변화와 같은 <strong>전통적인 유발 요인</strong>에 노출되는 단계입니다. 이는 기미 발생의 서막을 엽니다.' },
             '2': { title: '2단계: 국소적 반응', text: '유발 요인에 의해 피부에서는 멜라닌 생성이 급증하고 염증 세포가 활성화되며, 이는 막대한 양의 <strong>활성산소종(ROS)</strong>을 생성합니다. 이로 인해 피부 고유의 항산화 방어 시스템이 처리 용량을 초과하는 <strong>과부하 상태</strong>에 빠집니다.' },
             '3': { title: '3단계: 전신적 악화', text: '동시에, <strong>장내 미생물 불균형</strong>과 같은 전신적 요인이 문제를 악화시킵니다. 장누수는 전신 염증을 유발하고, 미생물에 의한 에스트로겐 대사 변화는 혈중 에스트로겐 농도를 높여 이미 민감해진 피부를 더욱 자극합니다.' },
             '4': { title: '4단계: 악순환 및 기미 발생', text: '결국, 국소적 산화 스트레스와 전신적 염증 및 호르몬 불균형이 서로를 증폭시키는 <strong>악순환의 고리</strong>가 형성됩니다. 이 만성적이고 복합적인 기능 장애의 최종 결과물이 바로 임상적으로 관찰되는 완고하고 재발이 잦은 색소 침착, 즉 <strong>기미</strong>입니다.' }
         };
+        setupInfoReveal('pathogenesis-model', 'pathogenesis-details', stepInfos, 'active');
 
-        document.getElementById('pathogenesis-model').addEventListener('click', (e) => {
-            const stepElement = e.target.closest('[data-step]');
-            if (stepElement) {
-                const stepKey = stepElement.dataset.step;
-                const info = stepInfos[stepKey];
-                openModal(info.title, info.text);
-            }
-        });
+        // --- Accordion Logic ---
+        function setupAccordion(containerId, data, chartGenerator) {
+            const container = document.getElementById(containerId);
+            if (!container) return;
 
-        // Mobile Menu Toggle
+            data.forEach((item, index) => {
+                const accordionItem = document.createElement('div');
+                accordionItem.className = 'border border-gray-200 rounded-lg';
+                accordionItem.innerHTML = `
+                    <button class="accordion-button w-full flex justify-between items-center text-left p-4 font-semibold text-primary focus:outline-none hover:bg-gray-50">
+                        <span>${item.title || item.name}</span>
+                        <svg class="w-5 h-5 transform transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                    </button>
+                    <div class="accordion-content">
+                        <div class="accordion-inner-content p-4 pt-0" data-index="${index}">
+                            <!-- Content will be injected here -->
+                        </div>
+                    </div>
+                `;
+                container.appendChild(accordionItem);
+            });
+            
+            container.addEventListener('click', (e) => {
+                const button = e.target.closest('.accordion-button');
+                if (!button) return;
+
+                const content = button.nextElementSibling;
+                const icon = button.querySelector('svg');
+                const isOpen = content.style.maxHeight;
+
+                container.querySelectorAll('.accordion-content').forEach(c => {
+                    c.style.maxHeight = null;
+                    c.classList.remove('open');
+                    c.previousElementSibling.querySelector('svg').classList.remove('rotate-180');
+                });
+                
+                if (!isOpen) {
+                    content.classList.add('open');
+                    const innerContent = content.querySelector('.accordion-inner-content');
+                    const itemIndex = parseInt(innerContent.dataset.index);
+                    const itemData = data[itemIndex];
+
+                    if (chartGenerator) {
+                        chartGenerator(innerContent, itemData);
+                    } else {
+                        innerContent.innerHTML = `<p class="text-gray-600">${itemData.text}</p>`;
+                    }
+
+                    content.style.maxHeight = content.scrollHeight + "px";
+                    icon.classList.add('rotate-180');
+                }
+            });
+        }
+        
+        // --- Navigation ---
         const mobileMenuButton = document.getElementById('mobile-menu-button');
         const mobileMenu = document.getElementById('mobile-menu');
         mobileMenuButton.addEventListener('click', () => {
             mobileMenu.classList.toggle('hidden');
         });
 
-        // Gut Microbe Chart
-        const gutMicrobeData = {
-            labels: ['방선균문 (Actinobacteria)', '콜린셀라 (Collinsella)', '파라박테로이데스 (Parabacteroides)', '로즈부리아 (Roseburia)'],
-            datasets: [{
-                label: '기미 환자군 변화 (대조군 대비)',
-                data: [-25, 15, 18, -10],
-                backgroundColor: (context) => context.raw < 0 ? 'rgba(239, 68, 68, 0.6)' : 'rgba(34, 197, 94, 0.6)',
-                borderColor: (context) => context.raw < 0 ? 'rgba(239, 68, 68, 1)' : 'rgba(34, 197, 94, 1)',
-                borderWidth: 1
-            }]
-        };
-
+        // --- Chart & Data Setup ---
         const gutMicrobeChartCtx = document.getElementById('gutMicrobeChart').getContext('2d');
-        new Chart(gutMicrobeChartCtx, {
-            type: 'bar', data: gutMicrobeData,
-            options: {
-                indexAxis: 'y', responsive: true, maintainAspectRatio: false,
-                plugins: { legend: { display: false }, tooltip: { callbacks: { label: (c) => ` ${c.dataset.label || ''}: ${c.parsed.x > 0 ? '증가 경향' : '감소 경향'}` } } },
-                scales: { x: { title: { display: true, text: '상대적 풍부도 변화' } } }
-            }
-        });
-        
-        // Oral Therapies
+        new Chart(gutMicrobeChartCtx, { type: 'bar', data: { labels: ['방선균문 (Actinobacteria)', '콜린셀라 (Collinsella)', '파라박테로이데스 (Parabacteroides)', '로즈부리아 (Roseburia)'], datasets: [{ label: '기미 환자군 변화 (대조군 대비)', data: [-25, 15, 18, -10], backgroundColor: (c) => c.raw < 0 ? 'rgba(239, 68, 68, 0.6)' : 'rgba(34, 197, 94, 0.6)', borderColor: (c) => c.raw < 0 ? 'rgba(239, 68, 68, 1)' : 'rgba(34, 197, 94, 1)', borderWidth: 1 }] }, options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, tooltip: { callbacks: { label: (c) => ` ${c.dataset.label || ''}: ${c.parsed.x > 0 ? '증가 경향' : '감소 경향'}` } } }, scales: { x: { title: { display: true, text: '상대적 풍부도 변화' } } } } });
+
         const therapies = [
             { name: '트라넥삼산 (TXA)', mechanism: '플라스민 억제제; 항염증, 항혈관, 신호전달 차단 효과로 색소 침착을 다각적으로 억제합니다.', efficacy: '메타분석에서 MASI 점수를 유의미하게 감소시키는 것으로 확인되었습니다.', efficacyValue: 78, safety: '경미한 위장 장애, 희발월경 등이 보고되나 대체로 안전합니다. 중등도 이상 기미에 강력히 추천됩니다.' },
             { name: '폴리포디움 류코토모스 (PLE)', mechanism: '강력한 항산화 및 광보호 효과로 자외선으로 인한 피부 손상을 막고 DNA를 보호합니다.', efficacy: '보조 요법으로 사용 시 위약 대비 기미 개선 효과가 뚜렷합니다.', efficacyValue: 65, safety: '부작용이 거의 없어 내약성이 우수합니다.'},
@@ -352,82 +363,34 @@
             { name: '비타민 C', mechanism: '대표적인 항산화제이며 멜라닌 생성 효소인 티로시나제를 억제합니다.', efficacy: '레이저 등 다른 시술과 병용 시 시너지 효과를 냅니다.', efficacyValue: 50, safety: '대체로 안전하나 고용량 복용 시 위장 장애가 있을 수 있습니다.'},
             { name: '실리마린', mechanism: '항산화 및 항염증 작용을 통해 피부를 보호합니다.', efficacy: '기존 미백연고(하이드로퀴논)와 유사한 개선 효과를 보이면서 부작용은 더 적었습니다.', efficacyValue: 60, safety: '최소한의 부작용으로 안전하게 사용할 수 있습니다.'}
         ];
-        
-        const therapyCardsContainer = document.getElementById('therapy-cards');
-        const therapyDetailsContainer = document.getElementById('therapy-details');
+
         let activeTherapyChart = null;
-        therapies.forEach((therapy, index) => {
-            const card = document.createElement('div');
-            card.className = 'p-4 border rounded-lg cursor-pointer hover:bg-accent hover:border-primary transition-all duration-200';
-            card.textContent = therapy.name;
-            therapyCardsContainer.appendChild(card);
-            card.addEventListener('click', () => {
-                therapyDetailsContainer.classList.remove('hidden');
-                if(activeTherapyChart) activeTherapyChart.destroy();
-                therapyDetailsContainer.innerHTML = `<h4 class="font-bold text-xl text-primary mb-2">${therapy.name}</h4><p class="mb-2"><strong>작용 기전:</strong> ${therapy.mechanism}</p><p class="mb-2"><strong>주요 효능:</strong> ${therapy.efficacy}</p><p class="mb-4"><strong>안전성:</strong> ${therapy.safety}</p><div class="relative h-24 w-full"><canvas id="therapyEfficacyChart"></canvas></div><p class="text-center text-xs text-gray-500 mt-1">상대적 개선 효과 지수</p>`;
-                const efficacyCtx = document.getElementById('therapyEfficacyChart').getContext('2d');
-                activeTherapyChart = new Chart(efficacyCtx, { type: 'bar', data: { labels: [therapy.name], datasets: [{ label: '개선 효과', data: [therapy.efficacyValue], backgroundColor: ['rgba(141, 123, 104, 0.7)'], borderColor: ['rgba(141, 123, 104, 1)'], borderWidth: 1, maxBarThickness: 50 }] }, options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { beginAtZero: true, max: 100, ticks: { display: false }, grid: { display: false } }, y: { ticks: { display: false }, grid: { display: false } } } } });
-                document.querySelectorAll('#therapy-cards div').forEach(c => c.classList.remove('bg-accent', 'border-primary'));
-                card.classList.add('bg-accent', 'border-primary');
-            });
-        });
+        function therapyChartGenerator(container, data) {
+            if (activeTherapyChart) activeTherapyChart.destroy();
+            
+            container.innerHTML = `
+                <p class="mb-2"><strong>작용 기전:</strong> ${data.mechanism}</p>
+                <p class="mb-2"><strong>주요 효능:</strong> ${data.efficacy}</p>
+                <p class="mb-4"><strong>안전성:</strong> ${data.safety}</p>
+                <div class="relative h-24 w-full"><canvas id="therapyEfficacyChart_${data.name}"></canvas></div>
+                <p class="text-center text-xs text-gray-500 mt-1">상대적 개선 효과 지수</p>
+            `;
+            const canvas = container.querySelector('canvas');
+            activeTherapyChart = new Chart(canvas, { type: 'bar', data: { labels: [data.name], datasets: [{ label: '개선 효과', data: [data.efficacyValue], backgroundColor: ['rgba(141, 123, 104, 0.7)'], borderColor: ['rgba(141, 123, 104, 1)'], borderWidth: 1, maxBarThickness: 50 }] }, options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { beginAtZero: true, max: 100, ticks: { display: false }, grid: { display: false } }, y: { ticks: { display: false }, grid: { display: false } } } } });
+        }
+        setupAccordion('therapy-accordion', therapies, therapyChartGenerator);
         
-        // Alcohol Risk Visualization
-        const alcoholRiskContainer = document.getElementById('alcohol-risk');
-        let riskHTML = '<span title="비음주자">🚶</span>';
-        for(let i = 0; i < 19; i++) riskHTML += '<span class="text-red-500" title="음주자">🚶</span>';
-        alcoholRiskContainer.innerHTML = riskHTML;
-        
-        // Future Accordion
+        // Alcohol Risk
+        document.getElementById('alcohol-risk').innerHTML = '<span title="비음주자">🚶</span>' + Array(19).fill('<span class="text-red-500" title="음주자">🚶</span>').join('');
+
+        // Future Section
         const futureTopics = [
             { title: '전향적 임상 시험', text: '특정 식이 패턴(예: 지중해식 식단)이 기미 중증도와 장내 미생물 구성에 미치는 영향을 평가하는 <strong>대규모, 무작위 대조 시험</strong>이 시급합니다. 이를 통해 식단 조절의 구체적인 가이드라인을 마련할 수 있습니다.' },
             { title: '마이크로바이옴 연구', text: '기미 환자의 장내 미생물, 특히 에스트로겐 대사에 관여하는 <strong>\'에스트로볼롬(estrobolome)\'</strong>의 특성을 정밀하게 규명하는 연구가 필요합니다. 더 나아가 특정 프로바이오틱스나 분변 미생물 이식(FMT)의 치료 효과를 검증하는 연구가 요구됩니다.' },
             { title: 'Nrf2 표적 치료', text: '피부의 내인성 항산화 방어 시스템인 <strong>Nrf2 경로를 활성화</strong>하는 새로운 치료 전략이 유망합니다. 특정 영양 성분이나 약물을 통해 이 경로를 강화하여 피부 스스로 산화 스트레스에 대항하는 능력을 키우는 방식입니다.' },
             { title: '개인 맞춤 의학', text: '궁극적인 목표는 환자 개인의 <strong>유전적 위험도, 호르몬 상태, 장내 미생물 프로파일</strong>을 종합적으로 분석하여 최적의 국소 치료, 전신 요법, 생활 습관 중재를 맞춤형으로 조합하는 것입니다. 이는 기미 정복의 최종적인 길이 될 것입니다.' }
         ];
-
-        const accordionContainer = document.getElementById('future-accordion');
-        futureTopics.forEach(topic => {
-            const item = document.createElement('div');
-            item.className = 'border border-gray-200 rounded-lg';
-            item.innerHTML = `
-                <button class="accordion-button w-full flex justify-between items-center text-left p-4 font-semibold text-primary focus:outline-none hover:bg-gray-50">
-                    <span>${topic.title}</span>
-                    <svg class="w-5 h-5 transform transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
-                </button>
-                <div class="accordion-content">
-                    <p class="p-4 pt-0 text-gray-600">${topic.text}</p>
-                </div>
-            `;
-            accordionContainer.appendChild(item);
-        });
-
-        accordionContainer.addEventListener('click', (e) => {
-            const button = e.target.closest('.accordion-button');
-            if(button) {
-                const content = button.nextElementSibling;
-                const icon = button.querySelector('svg');
-                
-                if (content.style.maxHeight) {
-                    content.style.maxHeight = null;
-                    content.style.paddingTop = null;
-                    content.style.paddingBottom = null;
-                    icon.classList.remove('rotate-180');
-                } else {
-                    document.querySelectorAll('.accordion-content').forEach(c => {
-                        c.style.maxHeight = null;
-                        c.style.paddingTop = null;
-                        c.style.paddingBottom = null;
-                        c.previousElementSibling.querySelector('svg').classList.remove('rotate-180');
-                    });
-                    content.style.maxHeight = content.scrollHeight + "px";
-                    content.style.paddingTop = "0";
-                    content.style.paddingBottom = "1rem";
-                    icon.classList.add('rotate-180');
-                }
-            }
-        });
-
+        setupAccordion('future-accordion', futureTopics, null);
     });
     </script>
 </body>
